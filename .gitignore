@@ -1,0 +1,20 @@
+# Dependencies & build output
+node_modules/
+dist/
+coverage/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs & OS files
+*.log
+.DS_Store
+
+# Local planning docs (same convention as the Flutter repo)
+_specs/
+_plan/
+
+# Local Claude Code settings
+.claude/settings.local.json
