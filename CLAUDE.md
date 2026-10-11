@@ -16,7 +16,7 @@ Read these first:
 
 Node 24 is pinned in `.nvmrc`; run `nvm use` first (the machine default may be older).
 
-- `npm run dev`: run `src/index.ts` with reload on save (tsx)
+- `npm run dev`: run `src/server.ts` with reload on save (tsx); serves on `PORT` (default 3000)
 - `npm run build` / `npm start`: compile to `dist/` and run it
 - `npm run typecheck`: TypeScript check without emitting
 - `npm run lint` / `npm run lint:fix`: ESLint with type-aware `typescript-eslint` strict rules

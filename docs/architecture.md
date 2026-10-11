@@ -17,6 +17,19 @@ This doc covers the target design and the decisions behind it. The move off Supa
 | Tests    | Jest (unit) · Supertest (integration) · Playwright (end-to-end)           |
 | Infra    | Docker · GitHub Actions · AWS (EC2 or ECS, RDS, S3) · CloudWatch          |
 
+## Code structure
+
+```
+src/
+  server.ts        starts the HTTP server and handles graceful shutdown
+  app.ts           builds the Express app (middleware + routes); no listening, so tests can import it
+  routes/          HTTP layer: paths, input validation, response shape
+  services/        business logic; no HTTP or SQL
+  repositories/    data access; the only layer that talks to Postgres
+```
+
+A request flows `route → service → repository → database` and back. Each layer only calls the one below it, so business rules can be tested without HTTP, and queries can change without touching routes.
+
 ## Decisions
 
 | #   | Decision           | Choice                                       | Why                                                                                                               |
