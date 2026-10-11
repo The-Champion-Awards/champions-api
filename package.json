@@ -1,0 +1,42 @@
+{
+  "name": "champions-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node.js/TypeScript backend replacing Supabase for the Champions app",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Champion-Awards/champions-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/The-Champion-Awards/champions-api/issues"
+  },
+  "homepage": "https://github.com/The-Champion-Awards/champions-api#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1"
+  },
+  "allowScripts": {
+    "esbuild": false,
+    "fsevents": false
+  }
+}
