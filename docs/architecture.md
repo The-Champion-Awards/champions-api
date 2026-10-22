@@ -14,7 +14,7 @@ This doc covers the target design and the decisions behind it. The move off Supa
 | Auth     | JWT access + refresh rotation, bcrypt, role-based access control          |
 | Jobs     | Scheduled TMDB refresh: queue, retry with backoff, dead-letter handling   |
 | Cache    | Redis on the hot read path                                                |
-| Tests    | Jest (unit) · Supertest (integration) · Playwright (end-to-end)           |
+| Tests    | Vitest (unit) · Supertest (integration) · Playwright (end-to-end)         |
 | Infra    | Docker · GitHub Actions · AWS (EC2 or ECS, RDS, S3) · CloudWatch          |
 
 ## Code structure
@@ -30,10 +30,13 @@ src/
 
 A request flows `route → service → repository → database` and back. Each layer only calls the one below it, so business rules can be tested without HTTP, and queries can change without touching routes.
 
+Tests sit next to the code they cover (`health.routes.ts` → `health.routes.test.ts`). `tsconfig.build.json` leaves them out of `dist/`.
+
 ## Decisions
 
-| #   | Decision           | Choice                                       | Why                                                                                                               |
-| --- | ------------------ | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1   | Migration strategy | Big-bang rewrite                             | Avoid dual-write and split reads between Supabase and AWS. Supabase stays in production until a one-time cutover. |
-| 2   | Repository layout  | Separate repo (`champions-api`)              | Frontend and backend deploy, test, and version independently.                                                     |
-| 3   | Database access    | _Open:_ Prisma vs. node-pg-migrate + raw SQL |                                                                                                                   |
+| #   | Decision           | Choice                                       | Why                                                                                                                          |
+| --- | ------------------ | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Migration strategy | Big-bang rewrite                             | Avoid dual-write and split reads between Supabase and AWS. Supabase stays in production until a one-time cutover.            |
+| 2   | Repository layout  | Separate repo (`champions-api`)              | Frontend and backend deploy, test, and version independently.                                                                |
+| 3   | Database access    | _Open:_ Prisma vs. node-pg-migrate + raw SQL |                                                                                                                              |
+| 4   | Test runner        | Vitest (not Jest)                            | Native ESM and TypeScript with no extra config; Jest's ESM support is still experimental. Same `describe`/`it`/`expect` API. |

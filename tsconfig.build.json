@@ -1,0 +1,6 @@
+{
+  // Production build: same settings, minus tests. `tsconfig.json` still includes
+  // tests so `npm run typecheck`, ESLint, and the editor check them.
+  "extends": "./tsconfig.json",
+  "exclude": ["src/**/*.test.ts"]
+}
