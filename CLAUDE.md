@@ -14,10 +14,10 @@ Read these first:
 
 ## Commands
 
-Node 24 is pinned in `.nvmrc`; run `nvm use` first (the machine default may be older).
+Node 24 is pinned in `.nvmrc`; run `nvm use` first (the machine default may be older). For local settings, `cp .env.example .env`.
 
-- `npm run dev`: run `src/server.ts` with reload on save (tsx); serves on `PORT` (default 3000)
-- `npm run build` / `npm start`: compile to `dist/` (via `tsconfig.build.json`, which skips tests) and run it
+- `npm run dev`: run `src/server.ts` with reload on save (tsx); loads `.env` if present and serves on `PORT` (default 3000)
+- `npm run build` / `npm start`: compile to `dist/` (via `tsconfig.build.json`, which skips tests) and run it, loading `.env` if present
 - `npm run typecheck`: TypeScript check without emitting (includes tests)
 - `npm test` / `npm run test:watch`: Vitest + Supertest; tests live next to the code as `*.test.ts`
 - `npm run lint` / `npm run lint:fix`: ESLint with type-aware `typescript-eslint` strict rules

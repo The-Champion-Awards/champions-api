@@ -1,9 +1,18 @@
 import { createApp } from './app.js';
+import { type Config, loadConfig } from './config.js';
 
-const port = Number(process.env.PORT ?? 3000);
+// Fail fast: refuse to start with missing or invalid environment variables.
+// Print only the message (it names each bad variable); a stack trace adds noise.
+let config: Config;
+try {
+  config = loadConfig();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
 
-const server = createApp().listen(port, () => {
-  console.log(`champions-api listening on http://localhost:${String(port)}`);
+const server = createApp().listen(config.PORT, () => {
+  console.log(`champions-api listening on http://localhost:${String(config.PORT)}`);
 });
 
 // Container platforms (ECS, Docker) send SIGTERM before stopping a container.
