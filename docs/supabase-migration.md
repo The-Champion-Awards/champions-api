@@ -10,6 +10,7 @@ As of October 2026:
 - **RPCs (13):** `get_leaderboard`, `get_user_list_items`, `save_user_list`, `get_user_list_counts`, `get_bracket`, `delete_account`, `get_comment_page`, `get_reply_page`, `get_subtree_page`, `get_comment_count`, `smart_delete_comment`, `restore_comment`, `add_comment`
 - **Auth:** email/password sign-up, sign-in, sign-out, forgot-password email, password change, auth-state stream (sign-up and reset come from the `SupaEmailAuth` widget in `lib/pages/auth/auth.page.dart`)
 - **Storage:** user avatars
+- **Logs:** request and error logs in the Supabase dashboard (replaced by pino → CloudWatch Logs)
 - **Note:** `category`, `year`, `media_type`, and `get_leaderboard` are referenced as raw strings, not through `supabase.constants.dart`.
 - **Note:** the schema and RPC SQL exist only in Supabase; they are not in version control and must be exported before porting.
 
