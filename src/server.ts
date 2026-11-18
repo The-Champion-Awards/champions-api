@@ -1,8 +1,10 @@
 import { createApp } from './app.js';
 import { type Config, loadConfig } from './config.js';
+import { createLogger } from './logger.js';
 
 // Fail fast: refuse to start with missing or invalid environment variables.
 // Print only the message (it names each bad variable); a stack trace adds noise.
+// This uses console.error because the logger can't be built without valid config.
 let config: Config;
 try {
   config = loadConfig();
@@ -11,14 +13,16 @@ try {
   process.exit(1);
 }
 
+const logger = createLogger(config);
+
 const server = createApp().listen(config.PORT, () => {
-  console.log(`champions-api listening on http://localhost:${String(config.PORT)}`);
+  logger.info({ port: config.PORT }, 'server listening');
 });
 
 // Container platforms (ECS, Docker) send SIGTERM before stopping a container.
 // Stop accepting new connections and let in-flight requests finish first.
 function shutdown(signal: NodeJS.Signals): void {
-  console.log(`${signal} received, shutting down`);
+  logger.info({ signal }, 'shutting down');
   server.close(() => process.exit(0));
 }
 

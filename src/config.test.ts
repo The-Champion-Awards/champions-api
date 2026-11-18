@@ -4,7 +4,7 @@ import { loadConfig } from './config.js';
 
 describe('loadConfig', () => {
   it('applies defaults when variables are unset', () => {
-    expect(loadConfig({})).toEqual({ NODE_ENV: 'development', PORT: 3000 });
+    expect(loadConfig({})).toEqual({ NODE_ENV: 'development', PORT: 3000, LOG_LEVEL: 'info' });
   });
 
   it('coerces PORT from a string to a number', () => {
@@ -29,5 +29,9 @@ describe('loadConfig', () => {
 
   it('rejects an unknown NODE_ENV', () => {
     expect(() => loadConfig({ NODE_ENV: 'staging' })).toThrow(/NODE_ENV/);
+  });
+
+  it('rejects an unknown LOG_LEVEL', () => {
+    expect(() => loadConfig({ LOG_LEVEL: 'verbose' })).toThrow(/LOG_LEVEL/);
   });
 });

@@ -6,6 +6,8 @@ This doc covers the target design and the decisions behind it. The move off Supa
 
 ## Target architecture
 
+The original target stack, kept as specified. Where the build differs, the reason is under [Decisions](#decisions).
+
 | Layer    | Technology                                                                |
 | -------- | ------------------------------------------------------------------------- |
 | Client   | Flutter (existing) + React admin dashboard (new)                          |
@@ -14,7 +16,7 @@ This doc covers the target design and the decisions behind it. The move off Supa
 | Auth     | JWT access + refresh rotation, bcrypt, role-based access control          |
 | Jobs     | Scheduled TMDB refresh: queue, retry with backoff, dead-letter handling   |
 | Cache    | Redis on the hot read path                                                |
-| Tests    | Vitest (unit) · Supertest (integration) · Playwright (end-to-end)         |
+| Tests    | Jest (unit) · Supertest (integration) · Playwright (end-to-end)           |
 | Infra    | Docker · GitHub Actions · AWS (EC2 or ECS, RDS, S3) · CloudWatch          |
 
 ## Code structure
@@ -23,6 +25,7 @@ This doc covers the target design and the decisions behind it. The move off Supa
 src/
   server.ts        starts the HTTP server and handles graceful shutdown
   config.ts        reads environment variables and validates them with zod at startup
+  logger.ts        builds the pino logger from config
   app.ts           builds the Express app (middleware + routes); no listening, so tests can import it
   routes/          HTTP layer: paths, input validation, response shape
   services/        business logic; no HTTP or SQL
@@ -58,3 +61,7 @@ Native ESM and TypeScript with no extra config; Jest's ESM support is still expe
 ### 5. Configuration: zod + Node's `--env-file`
 
 `config.ts` validates env vars with zod at startup, so a bad deploy fails fast. Node 24 reads `.env` natively, so no `dotenv`.
+
+### 6. Logging: pino
+
+Structured JSON logs on stdout; the platform (CloudWatch in AWS) collects them, so the app never sends logs anywhere itself. pino is the standard fast logger for Node; winston is older, slower, and more configuration than we need.
