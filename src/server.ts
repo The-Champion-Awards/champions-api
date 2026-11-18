@@ -15,7 +15,7 @@ try {
 
 const logger = createLogger(config);
 
-const server = createApp().listen(config.PORT, () => {
+const server = createApp(logger).listen(config.PORT, () => {
   logger.info({ port: config.PORT }, 'server listening');
 });
 
