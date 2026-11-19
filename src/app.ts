@@ -24,6 +24,14 @@ function requestId(req: IncomingMessage, res: ServerResponse): string {
   return id;
 }
 
+// Headers that carry credentials. Request log lines show them as "[Redacted]"
+// so anyone who can read the logs can't reuse a user's token or session.
+const REDACTED_HEADERS = [
+  'req.headers.authorization',
+  'req.headers.cookie',
+  'res.headers["set-cookie"]',
+];
+
 /**
  * Builds the Express app without starting a server, so tests can send requests
  * to it directly (Supertest) and `server.ts` stays the only place that listens.
@@ -36,7 +44,7 @@ export function createApp(logger: Logger): Express {
 
   app.disable('x-powered-by');
   // First, so it sees every request; writes one log line when each response finishes.
-  app.use(pinoHttp({ logger, genReqId: requestId }));
+  app.use(pinoHttp({ logger, genReqId: requestId, redact: REDACTED_HEADERS }));
   app.use(express.json());
 
   app.use('/health', healthRouter);
