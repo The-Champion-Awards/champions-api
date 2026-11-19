@@ -37,22 +37,51 @@ describe('createApp', () => {
     expect(res.headers['x-powered-by']).toBeUndefined();
   });
 
-  it('logs each request with its method, URL, and status', async () => {
-    const { logger, lines } = captureLogger();
+  describe('request logging', () => {
+    it('logs each request with its method, URL, and status', async () => {
+      const { logger, lines } = captureLogger();
 
-    await request(createApp(logger)).get('/health');
+      await request(createApp(logger)).get('/health');
 
-    // The log line is written when the response finishes, which can land just
-    // after Supertest hands back the response, so wait for it.
-    const line = await vi.waitFor(() => {
-      const found = lines.find((l) => l.msg === 'request completed');
-      expect(found).toBeDefined();
-      return found;
+      // The log line is written when the response finishes, which can land just
+      // after Supertest hands back the response, so wait for it.
+      const line = await vi.waitFor(() => {
+        const found = lines.find((l) => l.msg === 'request completed');
+        expect(found).toBeDefined();
+        return found;
+      });
+
+      expect(line).toMatchObject({
+        req: { method: 'GET', url: '/health' },
+        res: { statusCode: 200 },
+      });
     });
 
-    expect(line).toMatchObject({
-      req: { method: 'GET', url: '/health' },
-      res: { statusCode: 200 },
+    it('hides credential headers in the request log', async () => {
+      const { logger, lines } = captureLogger();
+
+      await request(createApp(logger))
+        .get('/health')
+        .set('Authorization', 'Bearer secret-token')
+        .set('Cookie', 'session=secret-session')
+        .set('Accept', 'application/json');
+
+      const line = await vi.waitFor(() => {
+        const found = lines.find((l) => l.msg === 'request completed');
+        expect(found).toBeDefined();
+        return found;
+      });
+
+      expect(line).toMatchObject({
+        req: {
+          headers: {
+            authorization: '[Redacted]',
+            cookie: '[Redacted]',
+            // Ordinary headers are still logged as sent.
+            accept: 'application/json',
+          },
+        },
+      });
     });
   });
 
