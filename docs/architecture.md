@@ -27,16 +27,19 @@ src/
   config.ts        reads environment variables and validates them with zod at startup
   logger.ts        builds the pino logger from config
   app.ts           builds the Express app (middleware + routes); no listening, so tests can import it
+  http-error.ts    HttpError: thrown by routes to send a specific error status and message
+  middleware/      cross-cutting request handling, e.g. the 404 and error handlers
   routes/          HTTP layer: paths, input validation, response shape
   services/        business logic; no HTTP or SQL
   repositories/    data access; the only layer that talks to Postgres
+  test-helpers/    shared test utilities (e.g. a logger that captures lines); not in the build
 ```
 
 A request flows `route → service → repository → database` and back. Each layer only calls the one below it, so business rules can be tested without HTTP, and queries can change without touching routes.
 
 Configuration comes only from environment variables, never hardcoded values. `config.ts` validates them once at startup and the app refuses to start if any are missing or invalid, so a bad deploy fails immediately with a clear message. Locally, `npm run dev` and `npm start` load them from a gitignored `.env` file (copied from `.env.example`); in production the platform sets them directly.
 
-Tests sit next to the code they cover (`health.routes.ts` → `health.routes.test.ts`). `tsconfig.build.json` leaves them out of `dist/`.
+Tests sit next to the code they cover (`health.routes.ts` → `health.routes.test.ts`). `tsconfig.build.json` leaves them and `test-helpers/` out of `dist/`.
 
 ## Decisions
 
@@ -65,3 +68,9 @@ Native ESM and TypeScript with no extra config; Jest's ESM support is still expe
 ### 6. Logging: pino
 
 Structured JSON logs on stdout; the platform (CloudWatch in AWS) collects them, so the app never sends logs anywhere itself. pino is the standard fast logger for Node; winston is older, slower, and more configuration than we need.
+
+### 7. Error responses: one small JSON envelope (not RFC 9457)
+
+Every error is sent as `{ "error": { "code", "message", "requestId" } }`. `code` is stable for the client to branch on, `message` is safe to show users, and `requestId` matches the `X-Request-Id` header so a bug report points to the log line. The HTTP status is on the response itself, not repeated in the body.
+
+Routes throw `HttpError` for errors meant for the client; Express's own client errors (e.g. malformed JSON) keep their 4xx status; anything else is a bug and becomes a generic 500, with the real error only in the request's log line. RFC 9457 Problem Details was considered: it suits APIs called by third parties, but this API has one first-party client, so its extra fields (`type`, `title`, `status`) add ceremony without benefit.
