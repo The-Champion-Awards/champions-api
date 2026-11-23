@@ -2,9 +2,10 @@ import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import express, { type Express } from 'express';
-import type { Logger } from 'pino';
+import type { Level, Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
 
+import { errorHandler, notFound } from './middleware/error-handler.js';
 import { healthRouter } from './routes/health.routes.js';
 
 // Incoming IDs come from the client, so only short, plain values are trusted.
@@ -33,6 +34,17 @@ const REDACTED_HEADERS = [
 ];
 
 /**
+ * Picks the level for each request's log line. pino-http logs every request at
+ * `info` by default, even a crash, so log searches and alerts that filter by
+ * level couldn't tell a bug from a healthy request.
+ */
+export function logLevel(_req: IncomingMessage, res: ServerResponse, err?: Error): Level {
+  if (err || res.statusCode >= 500) return 'error'; // our bug
+  if (res.statusCode >= 400) return 'warn'; // the client's mistake
+  return 'info';
+}
+
+/**
  * Builds the Express app without starting a server, so tests can send requests
  * to it directly (Supertest) and `server.ts` stays the only place that listens.
  *
@@ -44,10 +56,16 @@ export function createApp(logger: Logger): Express {
 
   app.disable('x-powered-by');
   // First, so it sees every request; writes one log line when each response finishes.
-  app.use(pinoHttp({ logger, genReqId: requestId, redact: REDACTED_HEADERS }));
+  app.use(
+    pinoHttp({ logger, genReqId: requestId, redact: REDACTED_HEADERS, customLogLevel: logLevel }),
+  );
   app.use(express.json());
 
   app.use('/health', healthRouter);
+
+  // Last, so they only run when no route matched or something threw.
+  app.use(notFound);
+  app.use(errorHandler);
 
   return app;
 }
