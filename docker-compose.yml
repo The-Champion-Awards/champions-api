@@ -1,0 +1,25 @@
+# Local Postgres for development: `docker compose up -d` (stop with `docker compose down`).
+# Postgres.app works just as well; see "Local database" in CLAUDE.md.
+# These credentials are for local development only; production gets its own from AWS.
+services:
+  db:
+    # Major version 17, to match what production (AWS RDS) will run.
+    image: postgres:17
+    environment:
+      POSTGRES_USER: champions
+      POSTGRES_PASSWORD: champions
+      POSTGRES_DB: champions
+    ports:
+      - '5432:5432'
+    volumes:
+      # Keeps the data when the container is removed; `docker compose down -v` wipes it.
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # Ready once Postgres accepts connections, so tools can wait for it.
+      test: ['CMD-SHELL', 'pg_isready -U champions -d champions']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  db-data:
