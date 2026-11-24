@@ -74,3 +74,7 @@ Structured JSON logs on stdout; the platform (CloudWatch in AWS) collects them, 
 Every error is sent as `{ "error": { "code", "message", "requestId" } }`. `code` is stable for the client to branch on, `message` is safe to show users, and `requestId` matches the `X-Request-Id` header so a bug report points to the log line. The HTTP status is on the response itself, not repeated in the body.
 
 Routes throw `HttpError` for errors meant for the client; Express's own client errors (e.g. malformed JSON) keep their 4xx status; anything else is a bug and becomes a generic 500, with the real error only in the request's log line. RFC 9457 Problem Details was considered: it suits APIs called by third parties, but this API has one first-party client, so its extra fields (`type`, `title`, `status`) add ceremony without benefit.
+
+### 8. Local database: Docker Compose, with Postgres.app as an alternative
+
+`docker-compose.yml` runs PostgreSQL 17, the version production will run on RDS, so anyone can start the database with one command. The main development Mac can't run current Docker Desktop (its macOS 13 support has ended), so it uses Postgres.app instead; both are real Postgres 17 reached through `DATABASE_URL`, so the app can't tell the difference. CI always runs Postgres in Docker, so the containerized setup is still exercised on every PR.
