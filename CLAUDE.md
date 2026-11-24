@@ -14,7 +14,7 @@ Read these first:
 
 ## Commands
 
-Node 24 is pinned in `.nvmrc`; run `nvm use` first (the machine default may be older). For local settings, `cp .env.example .env`.
+Node 24 is pinned in `.nvmrc`; run `nvm use` first (the machine default may be older). For local settings, `cp .env.example .env`; the app won't start without a valid `DATABASE_URL` (see Local database below).
 
 - `npm run dev`: run `src/server.ts` with reload on save (tsx); loads `.env` if present and serves on `PORT` (default 3000)
 - `npm run build` / `npm start`: compile to `dist/` (via `tsconfig.build.json`, which skips tests) and run it, loading `.env` if present
@@ -24,6 +24,15 @@ Node 24 is pinned in `.nvmrc`; run `nvm use` first (the machine default may be o
 - `npm run format` / `npm run format:check`: Prettier
 
 TypeScript is strict ESM (`module: NodeNext`), so relative imports need the `.js` extension, e.g. `import { app } from './app.js'`.
+
+## Local database
+
+PostgreSQL 17 (matching production on AWS RDS), reached through `DATABASE_URL` in `.env`. Use either setup; both listen on port 5432, so run only one at a time.
+
+- **Docker:** `docker compose up -d` starts it from `docker-compose.yml` with a `champions` database; the default `DATABASE_URL` in `.env.example` already matches. Stop with `docker compose down` (add `-v` to wipe the data).
+- **Postgres.app** (for Macs too old for current Docker Desktop, like the main dev machine): create a PostgreSQL 17 server and click Initialize, run `createdb champions` once, and set `DATABASE_URL=postgres://<your Mac username>@localhost:5432/champions` (no password). Its command-line tools are in `/Applications/Postgres.app/Contents/Versions/17/bin`.
+
+CI starts its own Postgres 17 container for every run (`services:` in `.github/workflows/ci.yml`), set up like `docker-compose.yml`; keep the two in sync.
 
 ## The Flutter client
 
