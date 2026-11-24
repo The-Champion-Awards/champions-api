@@ -5,6 +5,11 @@ import { createLogger } from './logger.js';
 
 describe('createLogger', () => {
   it('uses the configured LOG_LEVEL', () => {
-    expect(createLogger(loadConfig({ LOG_LEVEL: 'debug' })).level).toBe('debug');
+    const config = loadConfig({
+      LOG_LEVEL: 'debug',
+      DATABASE_URL: 'postgres://champions:champions@localhost:5432/champions',
+    });
+
+    expect(createLogger(config).level).toBe('debug');
   });
 });

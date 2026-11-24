@@ -7,6 +7,10 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  // Where the database is: postgres://user:password@host:port/database. Required
+  // with no default, so a deploy missing it fails here instead of quietly
+  // looking for a database on localhost.
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/, hostname: /.+/ }),
 });
 
 export type Config = z.infer<typeof envSchema>;
