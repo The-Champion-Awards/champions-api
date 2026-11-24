@@ -22,6 +22,28 @@ jobs:
     runs-on: ubuntu-latest
     # The checks take about a minute; fail a stuck run instead of waiting hours.
     timeout-minutes: 10
+
+    # A Postgres 17 container that runs alongside the job, set up like
+    # docker-compose.yml. The job waits until its health check passes.
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_USER: champions
+          POSTGRES_PASSWORD: champions
+          POSTGRES_DB: champions
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U champions -d champions"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+
+    # Every step can reach that database at this address.
+    env:
+      DATABASE_URL: postgres://champions:champions@localhost:5432/champions
+
     steps:
       - name: Check out code
         uses: actions/checkout@v5
@@ -34,6 +56,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Nothing uses the database yet; this proves it started and is reachable,
+      # so later database tests can rely on it.
+      - name: Check database is reachable
+        run: pg_isready --dbname="$DATABASE_URL"
 
       - name: Typecheck
         run: npm run typecheck
